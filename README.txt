@@ -1,4 +1,6 @@
-# Image-converter version 0.2
+# Image-converter 
+
+# version 0.2
 
 This is a python tools used for converting image formats to other formats
 
