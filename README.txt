@@ -1,4 +1,4 @@
-# image-converter
+#image-converter
 
 Basic usage: 
 image-converter.py -i INPUT -o OUTPUT
