@@ -1,5 +1,7 @@
 # Image-converter
 
+This is a python tools used for converting image formats to other formats
+
 Basic usage: 
 image-converter.py -i INPUT -o OUTPUT
 or 
