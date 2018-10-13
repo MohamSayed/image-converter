@@ -6,9 +6,9 @@ This is a python tool used for converting image formats to other formats, such a
 jpg, png, tiff, ...
 
 Basic usage: 
-image-converter.py -i INPUT -o OUTPUT
+python image-converter.py -i INPUT -o OUTPUT
 or 
-image-converter.py --input INPUT --ouput OUTPUT
+python image-converter.py --input INPUT --ouput OUTPUT
 
 
 
