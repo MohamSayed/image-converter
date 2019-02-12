@@ -5,16 +5,17 @@
 # Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
+import os
+import sys
+sys.path.append("ui/")
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 import about
-
+import table
 import single
 import batch
 
-import sys
-import os
+
 
 images = []
 
@@ -27,10 +28,16 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.listWidget = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget.setObjectName("listWidget")
 
-        self.verticalLayout.addWidget(self.listWidget)
+        # images table
+        self.tableWidget = table.ImageTableWidget(self.centralwidget)
+        self.tableWidget.setObjectName("tableWidget")
+        self.verticalLayout.addWidget(self.tableWidget)
+
+        self.path_count = 0
+        self.extension_count = 0
+        self.status_count = 0
+        self.rowCount = 0
 
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -38,7 +45,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_2.addWidget(self.pushButton_2)
 
-        # select image
+        # select one image(file)
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName("pushButton")
         self.horizontalLayout_2.addWidget(self.pushButton)
@@ -76,8 +83,13 @@ class Ui_MainWindow(object):
         self.actionExit = QtWidgets.QAction(MainWindow)
         self.actionExit.setObjectName("actionExit")
 
+        self.actionClearList = QtWidgets.QAction(MainWindow)
+
         self.menuFile.addAction(self.actionOpen_image)
         self.menuFile.addAction(self.actionOpen_folder)
+
+        self.menuFile.addAction(self.actionClearList)
+
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -101,27 +113,49 @@ class Ui_MainWindow(object):
         self.actionOpen_image.setText(_translate("MainWindow", "Open image"))
         self.actionOpen_folder.setText(_translate("MainWindow", "Open folder"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
+        self.actionClearList.setText(_translate("MainWindow", "Clear list"))
 
         self.comboBox.addItems(batch.extensions)
-
+    
     def connects(self):
         self.pushButton.clicked.connect(self.browse_single_image)
         self.actionAbout.triggered.connect(about.show_dialog)
         self.actionExit.triggered.connect(sys.exit)
         self.pushButton_save.clicked.connect(self.convert_and_save)
-
+        self.actionClearList.triggered.connect(self.clearTableItems)
+    def clearTableItems(self):
+        self.tableWidget.setRowCount(0)
     def browse_single_image(self):
         filename = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget,
                                                          'Open file', 'C:\\', "Image files (*.jpg *.gif *.tiff *.*png *.bmp *.ico *.pnm)")
-        self.listWidget.addItem(filename[0])
         if(filename):
+            self.rowCount += 1
+            self.tableWidget.setRowCount(self.rowCount)
+            self.addItemToTable(filename[0], column= "path")
+            self.addItemToTable(filename[0].split(".")[-1], column= "extension")
+
             images.append(filename[0])
             self.pushButton_save.setEnabled(True)
+            self.comboBox.setCurrentText(filename[0].split(".")[-1])
             print(filename[0])
-            
-        
-    def browse_directory():
-        pass
+
+    def addItemToTable(self, value, column = ''):
+        if(column == "path"):
+            self.tableWidget.setItem(self.path_count, 0, QtWidgets.QTableWidgetItem(value))
+            self.path_count += 1
+
+        if(column == "extension"):
+            self.tableWidget.setItem(self.extension_count, 1, QtWidgets.QTableWidgetItem(value))
+            self.extension_count += 1
+
+        if(column == "status"):
+            self.tableWidget.setItem(self.status_count, 2, QtWidgets.QTableWidgetItem(value))
+            self.status_count += 1
+
+    def browse_directory(self):
+        directory = QtWidgets.QFileDialog.getExistingDirectory(
+            self.centralwidget)
+
     def convert_and_save(self):
         output_dirname = QtWidgets.QFileDialog.getExistingDirectory(
             self.centralwidget)
