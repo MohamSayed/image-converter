@@ -1,6 +1,8 @@
 from cx_Freeze import setup, Executable
 build_exe_options = {"excludes": ["tkinter", 
-                                  "QtSql", "email", "socket", "http", "PyQt5", "numpy"]}
+                     "QtSql", "email", "socket", "http", "PyQt5", "numpy",
+                     "_ssl", "_socket", "xml", "html"
+                     ]}
 setup(name = "image-converter" ,
       version = "0.2" ,
       author = "me6789",

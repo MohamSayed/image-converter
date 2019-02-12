@@ -17,7 +17,7 @@ import sys
 class System():
     def dirs_tree(self, path):
         directories = []
-        for root, dirs, files in os.walk(path):
+        for root, _, _ in os.walk(path):
             directories.append(repr(root))
         return directories
 
@@ -35,7 +35,7 @@ class System():
             else:
                 if extensions:
                     for extension in extensions:
-                        if extension in file_or_dir:
+                        if extension in file_or_dir.lower() :
                             files.append(path + os.sep + file_or_dir)
                 else:
                     files.append(path + os.sep + file_or_dir)

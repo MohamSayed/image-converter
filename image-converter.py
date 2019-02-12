@@ -23,16 +23,21 @@ argument_parser= argparse.ArgumentParser(prog="image-converter",
 argument_parser.add_argument("-i", "--input", required=True, help=input_help)
 argument_parser.add_argument("-o", "--output", required=True, help=output_help)
 argument_parser.add_argument("-b", "--batch", action='store_true', help="path to images folder")
-argument_parser.add_argument("-e", "--ext", help="output extension: used with -b e.g: jpg, png, ...")
+argument_parser.add_argument("-f", "--format", help="output extension: used with -b e.g: jpg, png, ...")
+argument_parser.add_argument("-sf", "--specific-format", help="convert specific format from batch folder")
+
 args = vars(argument_parser.parse_args())
 
 # single image
 if not args["batch"]:
+    print("* Converting single image")
     single.single_convert(args["input"], args["output"])
 
 # batch images    
 elif args["batch"]:
-    if os.path.exists(args["input"]) and os.path.exists(args["output"]) :
-        batch.batch_convert(args["input"], args["output"], args["ext"])
+    print("* Converting batch images")  
+    if os.path.exists(args["input"]):
+        if not os.path.exists(args["output"]): os.mkdir(args["output"]); print("* Creating output folder")
+        batch.batch_convert(args["input"], args["specific-format"], args["output"], args["format"])        
     else:
-        print("- Path does not exist!")
+        print("- Input path does not exist!")
