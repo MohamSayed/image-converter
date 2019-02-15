@@ -1,20 +1,18 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'image-converter-mainwindow.ui'
-#
-# Created by: PyQt5 UI code generator 5.11.2
-#
-# WARNING! All changes made in this file will be lost!
-import os
 import sys
+import os
 sys.path.append("ui/")
+sys.path.append("core/")
+
+import batch
+import single
+import table
+import about
+import convert
+
+import utils
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import about
-import table
-import single
-import batch
-
+from PyQt5.QtCore import QThreadPool, QObject, QRunnable, pyqtSignal
 
 
 images = []
@@ -23,7 +21,7 @@ images = []
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(449, 443)
+        MainWindow.resize(600, 500)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -38,12 +36,12 @@ class Ui_MainWindow(object):
         self.extension_count = 0
         self.status_count = 0
         self.rowCount = 0
+        self.worker = None
 
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_2.addWidget(self.pushButton_2)
 
         # select one image(file)
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -57,9 +55,27 @@ class Ui_MainWindow(object):
         self.comboBox.setObjectName("comboBox")
         self.horizontalLayout_3.addWidget(self.comboBox)
         self.pushButton_save = QtWidgets.QPushButton(self.centralwidget)
-        self.horizontalLayout_3.addWidget(self.pushButton_save)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_3.addWidget(self.pushButton_save)
 
+        # cancel converting
+        # self.pushButton_cancel_converting = QtWidgets.QPushButton(self.centralwidget)
+        # self.horizontalLayout_3.addWidget(self.pushButton_cancel_converting)
+
+        # select folder & subfolder checkbox
+        self.horizontalLayout_folder_subfolder = QtWidgets.QHBoxLayout()
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBoxLabel = QtWidgets.QLabel(self.centralwidget)
+        self.checkBoxLabel.setText("sub folder")
+        self.horizontalLayout_folder_subfolder.addWidget(self.pushButton_2)
+        self.horizontalLayout_folder_subfolder.addWidget(self.checkBoxLabel)
+        self.horizontalLayout_folder_subfolder.addWidget(self.checkBox)
+        self.horizontalLayout_2.addLayout(self.horizontalLayout_folder_subfolder)
+
+        # progressbar
+        self.progressbar = QtWidgets.QProgressBar(self.centralwidget)
+        self.verticalLayout.addWidget(self.progressbar)
+        self.progressbar.setValue(0)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -95,6 +111,10 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
 
+        # threading part
+        self.pool = QThreadPool()
+        self.pool.setMaxThreadCount(5)
+
         self.connects()
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -104,7 +124,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Image-converter"))
         self.pushButton_2.setText(_translate("MainWindow", "select folder"))
         self.pushButton.setText(_translate("MainWindow", "select image"))
-        self.pushButton_save.setText(_translate("MainWindow", "Save"))
+        self.pushButton_save.setText(_translate("MainWindow","Convert && Save".encode(encoding="utf-8")))
         self.pushButton_save.setDisabled(True)
 
         self.menuFile.setTitle(_translate("MainWindow", "File"))
@@ -116,59 +136,121 @@ class Ui_MainWindow(object):
         self.actionClearList.setText(_translate("MainWindow", "Clear list"))
 
         self.comboBox.addItems(batch.extensions)
-    
+        #self.pushButton_cancel_converting.setText(_translate("MainWindow", "Cancel"))
+
     def connects(self):
         self.pushButton.clicked.connect(self.browse_single_image)
         self.actionAbout.triggered.connect(about.show_dialog)
         self.actionExit.triggered.connect(sys.exit)
-        self.pushButton_save.clicked.connect(self.convert_and_save)
+        self.pushButton_save.clicked.connect(self.convert)
+        self.pushButton_2.clicked.connect(self.browse_directory)
         self.actionClearList.triggered.connect(self.clearTableItems)
+        self.actionOpen_folder.triggered.connect(self.browse_directory)
+        self.actionOpen_image.triggered.connect(self.browse_single_image)
+        #self.pushButton_cancel_converting.clicked.connect(self.cancel_converting)
+
+    # @clear @table @clear.table
     def clearTableItems(self):
+        self.progressbar.setValue(0)
+        self.path_count = 0
+        self.extension_count = 0
+        self.status_count = 0
+        self.rowCount = 0
+        images.clear()
         self.tableWidget.setRowCount(0)
+
     def browse_single_image(self):
         filename = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget,
                                                          'Open file', 'C:\\', "Image files (*.jpg *.gif *.tiff *.*png *.bmp *.ico *.pnm)")
-        if(filename):
+        if(len(filename[0]) > 0): # if user selected a file
             self.rowCount += 1
             self.tableWidget.setRowCount(self.rowCount)
-            self.addItemToTable(filename[0], column= "path")
-            self.addItemToTable(filename[0].split(".")[-1], column= "extension")
+            self.addItemToTable(filename[0], column="path")
+            self.addItemToTable(filename[0].split(".")[-1], column="extension")
 
             images.append(filename[0])
             self.pushButton_save.setEnabled(True)
             self.comboBox.setCurrentText(filename[0].split(".")[-1])
             print(filename[0])
 
-    def addItemToTable(self, value, column = ''):
+    def addItemToTable(self, value, column=''):
         if(column == "path"):
-            self.tableWidget.setItem(self.path_count, 0, QtWidgets.QTableWidgetItem(value))
+            self.tableWidget.setItem(
+                self.path_count, 0, QtWidgets.QTableWidgetItem(value))
             self.path_count += 1
 
         if(column == "extension"):
-            self.tableWidget.setItem(self.extension_count, 1, QtWidgets.QTableWidgetItem(value))
+            self.tableWidget.setItem(
+                self.extension_count, 1, QtWidgets.QTableWidgetItem(value))
             self.extension_count += 1
 
         if(column == "status"):
-            self.tableWidget.setItem(self.status_count, 2, QtWidgets.QTableWidgetItem(value))
+            self.tableWidget.setItem(
+                self.status_count, 2, QtWidgets.QTableWidgetItem(value))
             self.status_count += 1
 
+    def cancel_converting(self):
+        self.pool.cancel(self.worker)
+
+    def convert(self):
+        output_dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self.centralwidget)       
+        self.progressbar.setValue(0)
+
+        # warning: hardcoded
+        _progress = 1
+        self.progressbar.setMaximum(len(images))
+        if output_dirname and images:
+            for image in set(images):
+                self.progressbar.setValue(_progress)
+                _progress += 1
+                image_name = ''
+                if image.count("/") > 0 and not image.count("\\") > 0:
+                    image_name = image.split(r".")[0].split("/")[-1]
+
+                else:
+                    image_name = image.split(r".")[0].split("\\")[-1]
+
+                final_outpath = output_dirname + os.sep + image_name
+
+                single.single_convert(
+                    image, final_outpath, extension=self.comboBox.currentText())
+
+
+    # directory
     def browse_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(
             self.centralwidget)
+        
+        if(len(directory) > 0):
+            self.pushButton_save.setEnabled(True)
+            # @checkbox @subfolder
+            if self.checkBox.isChecked():
+                
+                _images = utils.System.files_tree_list(directory,
+                                                    extensions=batch.extensions)
+                if _images.__len__() > 0:
+                    images.extend(_images)
+                    for image in _images:
+                        
+                        self.rowCount += 1
+                        self.tableWidget.setRowCount(self.rowCount)
+                        print(image)
+                        self.addItemToTable(image, column="path")
+                        self.addItemToTable(image.split(".")[-1], column="extension")
+            else:        
+                _images = utils.System.files_list(directory,
+                                                    extensions=batch.extensions)
+                if _images.__len__() > 0:
+                    images.extend(_images)
+                    for image in _images:
+                        
+                        self.rowCount += 1
+                        self.tableWidget.setRowCount(self.rowCount)
+                        print(image)
+                        self.addItemToTable(image, column="path")
+                        self.addItemToTable(image.split(".")[-1], column="extension")
 
-    def convert_and_save(self):
-        output_dirname = QtWidgets.QFileDialog.getExistingDirectory(
-            self.centralwidget)
-
-        # warning: hardcoded
-        if(output_dirname and images):
-            print("extension: " + self.comboBox.currentText())
-            break_detection = images[0].split("/")[-1].split(r".")[0] if images[0].count(
-                "/") > 0 else images[0].split("\\")[-1].split(r".")[0]
-            final_outpath = output_dirname + os.sep + break_detection
-
-            single.single_convert(
-                images[0], final_outpath, extension=self.comboBox.currentText())
 
 
 if __name__ == "__main__":

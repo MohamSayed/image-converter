@@ -11,7 +11,7 @@ class ImageTableWidget(QTableWidget):
         self.setHorizontalHeaderItem(0, QTableWidgetItem("Path"))
         self.setHorizontalHeaderItem(1, QTableWidgetItem("Extension"))
         self.setHorizontalHeaderItem(2, QTableWidgetItem("Status"))
-        self.horizontalHeader().setStretchLastSection(True)
+        #self.horizontalHeader().setStretchLastSection(True)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)

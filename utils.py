@@ -14,6 +14,7 @@
 import os
 import sys
 
+
 class System():
     def dirs_tree(self, path):
         directories = []
@@ -24,25 +25,39 @@ class System():
     def files_tree_list(path, extensions=[]):
         """
            *  path: start path
-           *  extensions: if you want to geet specific file extension; pass in the extensions
+           *  extensions: if you want to get specific file extension; pass in the extensions
                          else, leave it as default
         """
         files = []
         for file_or_dir in os.listdir(path):
             if os.path.isdir(path + os.sep + file_or_dir):
                 print("* subdir was found")
-                files.extend(System.files_tree_list(path + os.sep + file_or_dir, extensions=extensions))
+                files.extend(System.files_tree_list(
+                    path + os.sep + file_or_dir, extensions=extensions))
             else:
                 if extensions:
                     for extension in extensions:
-                        if extension in file_or_dir.lower() :
+                        if extension in file_or_dir.lower():
                             files.append(path + os.sep + file_or_dir)
                 else:
                     files.append(path + os.sep + file_or_dir)
 
         return files
 
+    def files_list(path, extensions=[]):
+        files = []
+        for file_or_dir in os.listdir(path):
+            if os.path.isdir(path + os.sep + file_or_dir):
+                pass
+            else:
+                if extensions:
+                    for extension in extensions:
+                        if extension in file_or_dir.lower():
+                            files.append(path + os.sep + file_or_dir)
+                else:
+                    files.append(path + os.sep + file_or_dir)
 
+        return files
 
     def walk(self, dirs, excludes=[]):
         dir_list = []
@@ -56,9 +71,9 @@ class System():
         for dir in self.walk(dirs, excludes=excludes):
             sys.path.append(dir)
 
+
 if __name__ == "__main__":
-    #print(System.dirs_tree("build"))
-    #print(System.walk(["build"]))
+    # print(System.dirs_tree("build"))
+    # print(System.walk(["build"]))
     for i in System.files_tree_list("blank", extensions="jpg"):
         print(i)
-    
