@@ -1,6 +1,6 @@
 # image-converter
 
-v 0.2
+v0.3
 
 This is a python tool used for converting image formats to other formats, such as
 jpg, png, tiff, ...
@@ -31,4 +31,15 @@ Here, I changed the format of the image from 'png' to 'jpg'.
 
 # Features
 * batch converting
+* Simple User Intefrace
+
+PayPal:
+https://www.paypal.me/eagle6789
+me49544@gmail.com
+
+BTC:
+1AP6bypSaFt7ptFydmjuWWWS8a9MCWRt3m
+
+Contact me :
+me.dev67894@gmail.com
 
