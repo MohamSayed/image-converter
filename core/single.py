@@ -11,6 +11,7 @@ def single_convert(in_path, out_path, extension=''):
         image = Image.open(in_path)
         try:
             image.save(out_path + '.' + extension)
+            image.close()
             print("~ Converting: {} > {} ".format(in_path, extension))
 
         except Exception as e:

@@ -1,5 +1,6 @@
 import sys
 import os
+import PIL.Image as Image
 sys.path.append("ui/")
 sys.path.append("core/")
 
@@ -200,10 +201,11 @@ class Ui_MainWindow(object):
         # warning: hardcoded
         _progress = 1
         self.progressbar.setMaximum(len(images))
+        self.progressbar.setMinimum(0)
         if output_dirname and images:
             for image in set(images):
-                self.progressbar.setValue(_progress)
                 _progress += 1
+                self.progressbar.setValue(_progress)
                 image_name = ''
                 if image.count("/") > 0 and not image.count("\\") > 0:
                     image_name = image.split(r".")[0].split("/")[-1]
