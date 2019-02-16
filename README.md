@@ -34,13 +34,13 @@ Here, I changed the format of the image from 'png' to 'jpg'.
 * batch converting
 * Simple User Intefrace
 
-PayPal:
-https://www.paypal.me/eagle6789
-me49544@gmail.com
+# PayPal:
+* https://www.paypal.me/eagle6789
+* me49544@gmail.com
 
-BTC:
-1AP6bypSaFt7ptFydmjuWWWS8a9MCWRt3m
+# BTC:
+* 1AP6bypSaFt7ptFydmjuWWWS8a9MCWRt3m
 
-Contact me :
-me.dev67894@gmail.com
+# Contact me :
+* me.dev67894@gmail.com
 
