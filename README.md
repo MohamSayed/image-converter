@@ -22,7 +22,7 @@ Batch images example:
 
 -b: enable batch 
 -e or --ext: new extension
--s or --specific: convert only specifci format
+-s or --specific: convert only specifc format
 
 Get help:
 > $ python image-converter.py -h
