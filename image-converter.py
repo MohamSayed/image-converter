@@ -1,8 +1,12 @@
 
 import argparse
-import re, os, sys
-sys.path.append("core/")
+import re
+import os
+import sys
+import colorama
 
+# appending path to imports path
+sys.path.append("core/")
 import single
 import batch
 
@@ -20,6 +24,8 @@ or
 output_help = "supply image name & ext for single image. for batch images supply output path only"
 input_help  = "supply image name & ext for single image. for batch images supply input path only"
 
+
+# arguments
 argument_parser= argparse.ArgumentParser(prog="image-converter",
                                          description=description, 
                                          formatter_class=argparse.RawDescriptionHelpFormatter
@@ -34,14 +40,15 @@ args = vars(argument_parser.parse_args())
 
 # single image
 if not args["batch"]:
-    print("* Converting single image")
+    print("~ Converting single image")
     single.single_convert(args["input"], args["output"])
 
 # batch images    
 elif args["batch"]:
-    print("* Converting batch images")  
+    print("~ Converting batch images")  
+    # checking input path
     if os.path.exists(args["input"]):
         if not os.path.exists(args["output"]): os.mkdir(args["output"]); print("* Creating output folder")
         batch.batch_convert(args["input"], args["specific"], args["output"], args["format"])        
     else:
-        print("- Input path does not exist!")
+        print(colorama.Fore.RED + "~ Input path does not exist!")
