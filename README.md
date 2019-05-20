@@ -21,9 +21,9 @@ Batch images example:
 
 > $ python image-converter.py -b -e png -i input_folder -o output_folder -s jpg
 
--b: enable batch 
--e or --ext: new extension
--s or --specific: convert only specifc format
+-b: enable batch  
+-e or --ext: new extension  
+-s or --specific: convert only specifc format  
 
 Get help:
 > $ python image-converter.py -h
